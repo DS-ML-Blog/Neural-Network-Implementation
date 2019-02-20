@@ -38,11 +38,11 @@ def generateTrainingSet(n_training, n_inputs, input_limits):
 
         inputy = np.zeros(n_inputs)
         for j, lims in enumerate(input_limits):
-            inputy[j] = np.random.rand()*lims[1]
+            inputy[j] = np.random.randint(lims[0],lims[1])
 
         dataMatrix[i,0:n_inputs] = inputy
-        dataMatrix[i,n_inputs] = inputy[0]/9.81*2*np.sin(inputy[1])*np.cos(inputy[1])
-        dataMatrix[i,n_inputs+1] = inputy[0]**2/9.81/2*(np.sin(inputy[1]))**2
+        dataMatrix[i,n_inputs] = np.sum(inputy)
+        dataMatrix[i,n_inputs+1] = np.sum(inputy)/n_inputs
 
     return dataMatrix
 

@@ -18,8 +18,8 @@ def trainNetwork(n_inputs, n_hidden, n_outputs, n_training, input_limits, w_limi
     W[0:np.shape(W1)[0],0:np.shape(W1)[1],0] = W1
     W[0:np.shape(W2)[0],0:np.shape(W2)[1],1] = W2
     G = np.zeros([max(n_hidden, n_outputs), max(n_hidden+1, n_inputs+1),2])     # macierz gradientów
-    Z = np.zeros([max(n_inputs, n_hidden, n_outputs), 3])                       # macierz aktywacji
-    Y = np.zeros([max(n_inputs, n_hidden, n_outputs), 3])                       # macierz preoutputów
+    Y = np.zeros([max(n_inputs, n_hidden, n_outputs), 3])                       # macierz aktywacji
+    Z = np.zeros([max(n_inputs, n_hidden, n_outputs), 3])                       # macierz preoutputów
 
     # 2. Nauka sieci
     i = 0
