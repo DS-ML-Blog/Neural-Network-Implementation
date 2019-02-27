@@ -1,7 +1,7 @@
 import numpy as np
 
 # =========================================================================
-# 1. Funkcje aktywacyjne. p to 2elementowa lista pozycji w macierzy funkcyj aktywacyjnych
+# 1. Funkcje aktywacyjne. p to 2elementowa lista pozycji w macierzy funkcji aktywacyjnych
 def activationFunction(x, loc_vector):
 
     x = list(x)
