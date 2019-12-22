@@ -1,17 +1,20 @@
 import numpy as np
-from funkcje import *
-from sklearn.metrics import *
-import matplotlib.pyplot as plt
 import seaborn as sns
+import matplotlib.pyplot as plt
 
-def evaluateNetwork(n_inputs, input_limits, W, n_hidden, n_outputs):
+from functions import *
+from sklearn.metrics import *
+
+
+def evaluate_network(n_inputs, input_limits, W, n_hidden, n_outputs):
 
     dataset = generateTrainingSet(1000, n_inputs, input_limits)
-    results_matrix = dataset[:,n_inputs:]
+    results_matrix = dataset[:, n_inputs:]
     predict_matrix = np.zeros(np.shape(results_matrix))
 
     for r, row in enumerate(predict_matrix):
-        predict_matrix[r,:] = getNetworkOutput(dataset[r,:n_inputs], W, n_inputs, n_hidden, n_outputs)
+        predict_matrix[r, :] = getNetworkOutput(dataset[r, :n_inputs], W,
+                                                n_inputs, n_hidden, n_outputs)
 
     results_vector = np.matrix.flatten(results_matrix)
     predict_vector = np.matrix.flatten(predict_matrix)
@@ -25,29 +28,28 @@ def evaluateNetwork(n_inputs, input_limits, W, n_hidden, n_outputs):
     results_vector = np.delete(results_vector, zero_indices)
     predict_vector = np.delete(predict_vector, zero_indices)
 
-    mape =  np.mean(np.abs((results_vector - predict_vector) / results_vector)) * 100
+    mape = np.mean(np.abs((results_vector - predict_vector) /
+                          results_vector)) * 100
 
-    # wykres
-    fig = plt.figure(dpi = 1000)
-    plt.scatter(x = results_vector, y = predict_vector, s = 0.2)
+    fig = plt.figure(dpi=1000)
+    plt.scatter(x=results_vector, y=predict_vector, s=0.2)
     plt.xlim([-35, 35])
     plt.ylim([-35, 35])
-    plt.title('Wartości obliczone vs. rzeczywiste', fontsize = 16)
-    plt.xlabel('Wartości rzeczywiste', fontsize = 14)
-    plt.ylabel('Wartości obliczone', fontsize = 14)
+    plt.title('Wartości obliczone vs. rzeczywiste', fontsize=16)
+    plt.xlabel('Wartości rzeczywiste', fontsize=14)
+    plt.ylabel('Wartości obliczone', fontsize=14)
 
-    plt.savefig(figure = fig, fname = 'ewaluacja1.png')
+    plt.savefig(figure=fig, fname='ewaluacja1.png')
 
-    # wykres + y=x
-    fig = plt.figure(dpi = 1000)
-    plt.scatter(x = results_vector, y = predict_vector, s = 0.2)
+    fig = plt.figure(dpi=1000)
+    plt.scatter(x=results_vector, y=predict_vector, s=0.2)
     plt.plot([-30, 30], [-30, 30], 'r-', linewidth=0.8)
     plt.xlim([-35, 35])
     plt.ylim([-35, 35])
-    plt.title('Wartości obliczone vs. rzeczywiste', fontsize = 16)
-    plt.xlabel('Wartości rzeczywiste', fontsize = 14)
-    plt.ylabel('Wartości obliczone', fontsize = 14)
+    plt.title('Wartości obliczone vs. rzeczywiste', fontsize=16)
+    plt.xlabel('Wartości rzeczywiste', fontsize=14)
+    plt.ylabel('Wartości obliczone', fontsize=14)
 
-    plt.savefig(figure = fig, fname = 'ewaluacja2.png')
+    plt.savefig(figure=fig, fname='ewaluacja2.png')
 
     return r2, mse, rmse, mae, mape

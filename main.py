@@ -1,77 +1,91 @@
 import numpy as np
-from numpy import random
-from funkcje import *
-from evaluateNetwork import *
-from trainNetwork import trainNetwork
-from postProcessing import postProcessing
 from datetime import datetime as dt
 
-# DANE WEJŚCIOWE
-# -- 1. Stałe ----------------------------------
+from evaluateNetwork import *
+from trainNetwork import train_network
+from postProcessing import post_processing
+
+
+# INPUT DATA
+# -- 1. Constants ----------------------------------
 n_inputs = 4
 n_outputs = 2
-input_limits = [[-10,10],[-10,10],[-10,10],[-10,10]]
+input_limits = [[-10, 10], [-10, 10], [-10, 10], [-10, 10]]
 conv = 0.0002
 input_vec = np.array([-8, 2, 1, -4])
 
-# -- 2. Zmienne ---------------------------------
+# -- 2. Variables ---------------------------------
 n_hidden_list = [3, 8, 15]
-n_training_list = [100,500,1500]
-w_limits_ini = [[-0.1,0.1],[-0.1,0.1]]
+n_training_list = [100, 500, 1500]
+w_limits_ini = [[-0.1, 0.1], [-0.1, 0.1]]
 # ------------------------------------------------
 
-# -- 3. Przygotowanie do nauki
+# -- 3. Preprocessing
 start = dt.now()
 w_limits = w_limits_ini
 
-lista_kosztow = [[],[],[]]
-lista_resid = [[],[],[]]
+costs_list = [[], [], []]
+residuals_list = [[], [], []]
 max_length = 0
 
-czas_matrix = np.zeros([len(n_hidden_list),len(n_training_list)])
+time_matrix = np.zeros([len(n_hidden_list), len(n_training_list)])
 output_matrix = np.zeros([len(n_hidden_list), len(n_training_list), n_outputs])
 deviations_matrix = np.zeros([len(n_hidden_list), len(n_training_list)])
 
-# -- 4. Pętla ucząca - podwójny for dla n_hidden oraz n_training
+# -- 4. Training loop - double 'for' for n_hidden and n_training
 for h_counter, h in enumerate(n_hidden_list):
     for t_counter, t in enumerate(n_training_list):
+        W, costs, residuals, time \
+            = train_network(n_inputs, h, n_outputs, t, input_limits, w_limits,
+                            conv)
+        costs_list[h_counter].append(costs)
+        residuals_list[h_counter].append(residuals)
+        max_length = max(max_length, len(costs))
 
-        W, koszty, residua, czas = trainNetwork(n_inputs, h, n_outputs, t, input_limits, w_limits, conv)
-        lista_kosztow[h_counter].append(koszty)
-        lista_resid[h_counter].append(residua)
-        max_length = max(max_length, len(koszty))
-
-        czas_matrix[h_counter, t_counter] = czas
-        output = getNetworkOutput(input_vec, W, n_inputs, n_hidden_list[h_counter], n_outputs)
+        time_matrix[h_counter, t_counter] = time
+        output \
+            = getNetworkOutput(input_vec, W, n_inputs,
+                               n_hidden_list[h_counter], n_outputs)
         output_matrix[h_counter, t_counter, :] = output
-        deviations_matrix[h_counter, t_counter] = np.abs( (output[0] - sum(input_vec))/sum(input_vec) )
+        deviations_matrix[h_counter, t_counter] \
+            = np.abs((output[0] - sum(input_vec))/sum(input_vec))
 
-# --- 5. Zamiana listy kosztów i residuów do postaci macierzy 4D
-dane_koszty_res = np.zeros([2,max_length,len(n_hidden_list),len(n_training_list)])
+# --- 5. Transformation of costs and residuals lists to a form of 4D matrix
+costs_res_data = np.zeros([2, max_length, len(n_hidden_list),
+                           len(n_training_list)])
 for h_counter, h in enumerate(n_hidden_list):
     for t_counter, t in enumerate(n_training_list):
-        dane_koszty_res[0,:len(lista_kosztow[h_counter][t_counter]),h_counter, t_counter] = lista_kosztow[h_counter][t_counter]
-        dane_koszty_res[1,:len(lista_resid[h_counter][t_counter]),h_counter, t_counter] = lista_resid[h_counter][t_counter]
+        costs_res_data[0, :len(costs_list[h_counter][t_counter]), h_counter,
+                       t_counter] = costs_list[h_counter][t_counter]
+        costs_res_data[1, :len(residuals_list[h_counter][t_counter]),
+                       h_counter, t_counter] \
+            = residuals_list[h_counter][t_counter]
 # -------------------------------------
 
 # -- 6. Postprocessing
 stop = dt.now()
 delta = stop - start
 
-print('Czas działania całości: ', round(delta.seconds/3600, 2), ' godziny')
+print('Total time: ', round(delta.seconds/3600, 2), ' [h]')
 
 for h_counter, h in enumerate(n_hidden_list):
     for t_counter, t in enumerate(n_training_list):
         print('n_hidden = ', h, '\t n_training = ', t)
-        print('Obliczone wartości: ' + str(round(output_matrix[h_counter, t_counter, 0], 3)) + '   ' + str(round(output_matrix[h_counter, t_counter, 1],3)) )
-        print('Oczekiwane wartości: ' + str(round(input_vec[0]/9.81*2*np.sin(input_vec[1])*np.cos(input_vec[1]),3)) + '   ' \
-            + str( round(input_vec[0]**2/9.81/2*(np.sin(input_vec[1]))**2,3)) + '\n' )
+        print('Calculated values: '
+              + str(round(output_matrix[h_counter, t_counter, 0], 3)) + '  '
+              + str(round(output_matrix[h_counter, t_counter, 1], 3)))
 
-postProcessing(W, dane_koszty_res, czas_matrix, n_hidden_list, n_training_list, deviations_matrix)
+        exp_value_1 = sum(input_vec)
+        exp_value_2 = sum(input_vec)/4
 
-# -- 7. Ewaluacja
+        print('Expected values: ' + str(round(exp_value_1, 3)) + '   '
+              + str(round(exp_value_2, 3)) + '\n')
 
-r2, mse, rmse, mae, mape = evaluateNetwork(n_inputs, input_limits, W, n_hidden_list[2], n_outputs)
-print('Ewaluacja: \n' + 'R2: ' + str(r2) + '\nMSE:' + str(mse) + '\nRMSE: ' + str(rmse) + '\nMAE: ' + str(mae) + '\nMAPE: ' + str(mape))
+post_processing(W, costs_res_data, time_matrix, n_hidden_list, n_training_list,
+                deviations_matrix)
 
-#
+# -- 7. Evaluation
+r2, mse, rmse, mae, mape \
+    = evaluate_network(n_inputs, input_limits, W, n_hidden_list[2], n_outputs)
+print('Evaluation: \n' + 'R2: ' + str(r2) + '\nMSE:' + str(mse) + '\nRMSE: ' +
+      str(rmse) + '\nMAE: ' + str(mae) + '\nMAPE: ' + str(mape))
