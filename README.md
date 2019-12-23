@@ -22,3 +22,13 @@ Optimization algorithm for training the network is backpropagation. Pipeline use
 - Calculate new set of weights and biases
 - Continue until convergence
 - Calculate outputs for a test set and evaluation metrics (R2, MSE, MAE, MAPE)
+
+
+
+### Results
+
+Results of the training process are shown in the following picture:
+
+![img](costs_residues_plots.png)
+
+n_H stands for number of hidden neurons and n_T stands for number of training examples.
